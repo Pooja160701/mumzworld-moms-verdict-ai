@@ -1,16 +1,31 @@
 import json
+from sentence_transformers import util
 from pipeline import (
     load_reviews,
     chunk_reviews,
     create_vector_store,
     retrieve_reviews,
     filter_by_product,
-    generate_valid_verdict
+    generate_valid_verdict,
+    model 
 )
 
 def load_test_cases(path="../data/test_cases.json"):
     with open(path, "r", encoding="utf-8") as f:
         return json.load(f)
+
+def semantic_match(pros, review_text):
+    if not pros:
+        return False
+    
+    embeddings = model.encode(pros + [review_text])
+    review_vec = embeddings[-1]
+
+    for i in range(len(pros)):
+        score = util.cos_sim(embeddings[i], review_vec).item()
+        if score > 0.5:
+            return True
+    return False
 
 def evaluate_case(case, index, chunks):
     product = case["product"]
@@ -51,6 +66,9 @@ def evaluate_case(case, index, chunks):
     if "mixed" in verdict.summary_en.lower() and len(verdict.pros) <= 1:
         score -= 1
 
+    if semantic_match(verdict.pros, review_text):
+        score += 1
+
     # Uncertainty handling
     if case["name"] in ["low_data", "empty_query", "garbage_input"]:
         if verdict.uncertainty_flag:
@@ -62,7 +80,7 @@ def evaluate_case(case, index, chunks):
     return {
         "case": case["name"],
         "score": score,
-        "max_score": 4,
+        "max_score": 5,
         "verdict": verdict.model_dump()
     }
 
