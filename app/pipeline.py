@@ -1,10 +1,12 @@
 import json
 import faiss
 import os
+import re
 import numpy as np
 from sentence_transformers import SentenceTransformer
 from openai import OpenAI
 from dotenv import load_dotenv
+from schema import MomsVerdict
 
 load_dotenv()
 
@@ -56,6 +58,26 @@ def retrieve_reviews(query, index, chunks, top_k=5):
 def filter_by_product(chunks, product_name):
     return [c for c in chunks if c["product"] == product_name]
 
+def extract_json(response_text):
+    try:
+        # Remove markdown code fences if present
+        cleaned = re.sub(r"```json|```", "", response_text).strip()
+
+        # Ensure it looks like a valid JSON object before parsing
+        if cleaned.startswith("{") and cleaned.endswith("}"):
+            return json.loads(cleaned)
+
+        return None
+
+    except Exception:
+        return None
+    
+def validate_output(data):
+    try:
+        return MomsVerdict(**data)
+    except Exception as e:
+        return None
+    
 def generate_verdict(retrieved_reviews):
     context = "\n".join([r["text"] for r in retrieved_reviews])
 
@@ -72,9 +94,11 @@ IMPORTANT:
 REVIEWS:
 {context}
 
-Return JSON with:
+Return ONLY valid JSON with:
 summary_en, summary_ar, pros, cons, common_issues,
 recommended_age, confidence_score, uncertainty_flag
+Do not include markdown.
+Do not include explanations.
 """
 
     response = client.chat.completions.create(
@@ -84,6 +108,35 @@ recommended_age, confidence_score, uncertainty_flag
     )
 
     return response.choices[0].message.content
+
+def generate_valid_verdict(retrieved_reviews, max_retries=3):
+    for attempt in range(max_retries):
+        raw_output = generate_verdict(retrieved_reviews)
+
+        json_data = extract_json(raw_output)
+
+        if not json_data:
+            print(f"Retry {attempt+1}: JSON extraction failed")
+            continue
+
+        validated = validate_output(json_data)
+
+        if validated:
+            return validated
+
+        print(f"Retry {attempt+1}: Schema validation failed")
+
+    # FINAL FALLBACK
+    return MomsVerdict(
+        summary_en="I don't know",
+        summary_ar="لا أعرف",
+        pros=[],
+        cons=[],
+        common_issues=[],
+        recommended_age="I don't know",
+        confidence_score=0.0,
+        uncertainty_flag=True
+    )
 
 if __name__ == "__main__":
     reviews = load_reviews()
@@ -97,10 +150,10 @@ if __name__ == "__main__":
 
     query = "Is this stroller durable and good quality?"
     results = retrieve_reviews(query, index, filtered_chunks)
-    verdict = generate_verdict(results)
+    verdict = generate_valid_verdict(results)
 
     print("\nRetrieved Reviews:\n")
-    print("\nGenerated Verdict:\n")
-    print(verdict)
+    print("\nFinal Structured Verdict:\n")
+    print(verdict.dict())
     for r in results:
         print(r["text"])
