@@ -86,10 +86,20 @@ You are an expert shopping assistant for moms.
 
 Analyze the following product reviews and generate a structured verdict.
 
-IMPORTANT:
+STRICT RULES:
 - Use ONLY the provided reviews
-- If information is missing → say "I don't know"
 - Do NOT hallucinate
+- If data is insufficient → say "I don't know"
+
+UNCERTAINTY:
+- Set uncertainty_flag = true ONLY if:
+  - Reviews are insufficient OR
+  - Strong contradictions exist
+- Otherwise set it to false
+
+OUTPUT QUALITY:
+- Always extract at least 1–2 pros or cons if available
+- Avoid empty pros/cons unless truly no signal
 
 REVIEWS:
 {context}
@@ -97,8 +107,11 @@ REVIEWS:
 Return ONLY valid JSON with:
 summary_en, summary_ar, pros, cons, common_issues,
 recommended_age, confidence_score, uncertainty_flag
+
 Do not include markdown.
 Do not include explanations.
+
+Ensure Arabic output is natural and fluent, not literal translation.
 """
 
     response = client.chat.completions.create(
