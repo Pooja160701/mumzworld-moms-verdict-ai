@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+pydantic
+faker
+langchain
+faiss-cpu
+sentence-transformers
+python-dotenv
+openai
+tqdm
