@@ -1,0 +1,187 @@
+# Tradeoffs
+
+## Problem Selection
+
+I chose to build a “Moms Verdict” engine that summarizes large volumes of product reviews into structured, multilingual insights.
+
+### Why this problem
+- High leverage: product decisions are a core friction point in e-commerce
+- Realistic: Mumzworld has multilingual (EN + AR) users and review-heavy products
+- AI-appropriate: requires summarization, reasoning, multilingual generation, and uncertainty handling
+
+### Alternatives considered
+- Customer support auto-replies → rejected (too common, lower signal)
+- Gift recommendation agent → rejected (more UX than reasoning)
+- Voice-to-shopping assistant → interesting but harder to evaluate rigorously
+
+---
+
+## Architecture Decisions
+
+### 1. RAG (Retrieval-Augmented Generation) vs Fine-tuning
+
+**Chosen:** RAG with embeddings + FAISS
+
+**Why:**
+- Ensures outputs are grounded in actual reviews
+- Works well with small, synthetic datasets
+- Easier to debug and evaluate
+
+**Tradeoff:**
+- Requires building and querying a vector index
+- Slightly higher latency
+
+**Alternative:**
+- Fine-tuning a model → rejected due to time constraints and lack of labeled data
+
+---
+
+### 2. FAISS vs Managed Vector DB
+
+**Chosen:** FAISS (local)
+
+**Why:**
+- Lightweight and fast to set up
+- No external dependencies
+- Ideal for prototype within ~5 hours
+
+**Tradeoff:**
+- No persistence or scaling features
+- Index rebuilt per query in evaluation (inefficient but simple)
+
+**Alternative:**
+- Pinecone / Weaviate → better for production, unnecessary for prototype
+
+---
+
+### 3. Sentence-Transformers vs API Embeddings
+
+**Chosen:** sentence-transformers (local model)
+
+**Why:**
+- Free and fast
+- Avoids API cost
+- Good enough semantic quality for short reviews
+
+**Tradeoff:**
+- Slightly lower embedding quality vs frontier models
+
+---
+
+### 4. Structured Output with Pydantic
+
+**Chosen:** strict schema validation
+
+**Why:**
+- Guarantees consistent output format
+- Enables reliable downstream usage
+- Aligns with “production-ready” requirement
+
+**Tradeoff:**
+- Requires retry logic
+- Adds complexity to pipeline
+
+---
+
+### 5. Retry + Fallback Strategy
+
+**Chosen:** up to 3 retries + safe fallback output
+
+**Why:**
+- LLMs are not deterministic
+- Prevents silent failures
+- Ensures system always returns valid output
+
+**Tradeoff:**
+- Increased latency in worst case
+- More API calls
+
+---
+
+### 6. Multilingual Generation vs Translation
+
+**Chosen:** generate EN + AR directly
+
+**Why:**
+- Avoids translation artifacts
+- Better aligns with native user experience
+
+**Tradeoff:**
+- Harder to control quality
+- Arabic fluency depends on model capability
+
+**Alternative:**
+- Generate in English → translate → rejected due to lower quality
+
+---
+
+### 7. Evaluation Strategy
+
+**Chosen:** heuristic-based scoring + adversarial test cases
+
+**Why:**
+- Fast to implement within time constraint
+- Captures key failure modes:
+  - grounding
+  - uncertainty
+  - structured output
+
+**Tradeoff:**
+- Heuristic checks (string matching) are imperfect
+- Not fully semantic
+
+**Future improvement:**
+- Embedding-based similarity for grounding
+- LLM-as-judge for reasoning quality
+
+---
+
+### 8. Data Generation (Synthetic)
+
+**Chosen:** Faker-based synthetic dataset
+
+**Why:**
+- Avoids scraping (as required)
+- Allows control over:
+  - noise
+  - contradictions
+  - multilingual content
+
+**Tradeoff:**
+- Less realistic than real-world data
+- Limited linguistic diversity
+
+---
+
+## Known Limitations
+
+- Conflicting reviews sometimes produce vague summaries
+- Confidence score is heuristic, not calibrated
+- Arabic output is good but not always native-level nuance
+- FAISS index rebuilt per query (inefficient)
+
+---
+
+## What I Would Build Next (With More Time)
+
+1. Persistent vector store with caching
+2. Better uncertainty calibration using:
+   - review density
+   - sentiment variance
+3. Improved extraction using:
+   - structured prompting (chain-of-thought internally)
+4. Stronger evaluation:
+   - semantic grounding checks
+   - LLM-based grading
+5. UI layer (Streamlit) for interactive demo
+6. Real product review dataset integration
+
+---
+
+## Key Insight
+
+The biggest tradeoff in this project was balancing:
+- **groundedness vs fluency**
+- **simplicity vs robustness**
+
+I prioritized **grounded, reliable output with explicit uncertainty handling**, even at the cost of occasional generic phrasing.
