@@ -97,9 +97,14 @@ UNCERTAINTY:
   - Strong contradictions exist
 - Otherwise set it to false
 
-OUTPUT QUALITY:
-- Always extract at least 1–2 pros or cons if available
-- Avoid empty pros/cons unless truly no signal
+EXTRACTION RULES (VERY IMPORTANT):
+- ALWAYS extract at least 1–2 pros OR cons from the reviews if any signal exists
+- If reviews contain both positive and negative opinions → include BOTH
+- Do NOT return empty pros and cons unless reviews truly contain no useful information
+
+QUALITY:
+- Be specific, not generic (avoid "mixed feelings" without details)
+- Ground every claim in review text
 
 REVIEWS:
 {context}
@@ -111,7 +116,7 @@ recommended_age, confidence_score, uncertainty_flag
 Do not include markdown.
 Do not include explanations.
 
-Ensure Arabic output is natural and fluent, not literal translation.
+Ensure Arabic output is natural and fluent.
 """
 
     response = client.chat.completions.create(

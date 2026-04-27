@@ -48,10 +48,13 @@ def evaluate_case(case, index, chunks):
     if len(verdict.pros) > 0 or len(verdict.cons) > 0:
         score += 1
 
-    # Penalize empty extraction in normal cases
-    if case["name"] not in ["low_data", "garbage_input"]:
-        if len(verdict.pros) == 0 and len(verdict.cons) == 0:
-            score -= 1
+    if "mixed" in verdict.summary_en.lower() and len(verdict.pros) <= 1:
+        score -= 1
+
+    # Uncertainty handling
+    if case["name"] in ["low_data", "empty_query", "garbage_input"]:
+        if verdict.uncertainty_flag:
+            score += 1
     else:
         if not verdict.uncertainty_flag:
             score += 1
