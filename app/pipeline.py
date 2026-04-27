@@ -155,5 +155,6 @@ if __name__ == "__main__":
     print("\nRetrieved Reviews:\n")
     print("\nFinal Structured Verdict:\n")
     print(verdict.dict())
+    print(verdict.model_dump())
     for r in results:
         print(r["text"])

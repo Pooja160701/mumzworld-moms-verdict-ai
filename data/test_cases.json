@@ -1,0 +1,52 @@
+[
+  {
+    "name": "basic_positive",
+    "product": "Baby Stroller",
+    "query": "Is this stroller good quality?"
+  },
+  {
+    "name": "negative_signal",
+    "product": "Baby Stroller",
+    "query": "Does this stroller break easily?"
+  },
+  {
+    "name": "mixed_sentiment",
+    "product": "Baby Stroller",
+    "query": "Is this stroller comfortable and durable?"
+  },
+  {
+    "name": "arabic_query",
+    "product": "Baby Stroller",
+    "query": "هل هذه عربة أطفال جيدة؟"
+  },
+  {
+    "name": "low_data",
+    "product": "Nonexistent Product",
+    "query": "Is this product good?"
+  },
+  {
+    "name": "garbage_input",
+    "product": "Baby Stroller",
+    "query": "????"
+  },
+  {
+    "name": "conflicting_reviews",
+    "product": "Baby Stroller",
+    "query": "Should I buy this stroller?"
+  },
+  {
+    "name": "specific_feature",
+    "product": "Baby Stroller",
+    "query": "Is this stroller durable?"
+  },
+  {
+    "name": "price_related",
+    "product": "Baby Stroller",
+    "query": "Is this stroller worth the money?"
+  },
+  {
+    "name": "empty_query",
+    "product": "Baby Stroller",
+    "query": ""
+  }
+]
