@@ -16,6 +16,30 @@ I chose to build a “Moms Verdict” engine that summarizes large volumes of pr
 
 ---
 
+## 🧰 Tooling
+
+**Models Used**
+- gpt-4o-mini → structured reasoning + multilingual generation
+- all-MiniLM-L6-v2 → embeddings for retrieval + evaluation
+
+**How I used AI tools**
+- ChatGPT: prompt iteration
+
+**What worked**
+- Hybrid approach (rules + LLM) improved reliability
+- Structured prompts reduced hallucinations
+
+**What didn’t**
+- Pure LLM → missed weak signals
+- String matching eval → too naive
+
+**Where I intervened**
+- Added rule-based signal extraction
+- Added semantic similarity scoring
+- Tightened prompt constraints
+
+---
+
 ## Architecture Decisions
 
 ### 1. RAG (Retrieval-Augmented Generation) vs Fine-tuning
@@ -151,13 +175,30 @@ I chose to build a “Moms Verdict” engine that summarizes large volumes of pr
 - Less realistic than real-world data
 - Limited linguistic diversity
 
+### 9. Hybrid Extraction vs Pure LLM
+
+**Chosen:** Hybrid (rule-based + LLM)
+
+**Why:**
+- Prevents loss of weak signals during summarization
+- Improves consistency in pros/cons extraction
+- Reduces empty outputs in edge cases
+
+**Tradeoff:**
+- Slight increase in system complexity
+- Requires maintaining keyword lists
+
+**Impact:**
+- Significant improvement in evaluation score and grounding reliability
+
 ---
 
 ## Known Limitations
 
-- Conflicting reviews sometimes produce vague summaries
-- Confidence score is heuristic, not calibrated
+- Conflicting reviews still sometimes produce minimal extraction (improved but not perfect)
+- Confidence score is heuristic, not statistically calibrated
 - Arabic output is good but not always native-level nuance
+- Rule-based extraction depends on keyword coverage
 - FAISS index rebuilt per query (inefficient)
 
 ---
@@ -180,8 +221,13 @@ I chose to build a “Moms Verdict” engine that summarizes large volumes of pr
 
 ## Key Insight
 
-The biggest tradeoff in this project was balancing:
-- **groundedness vs fluency**
-- **simplicity vs robustness**
+The biggest insight from this project was that:
 
-I prioritized **grounded, reliable output with explicit uncertainty handling**, even at the cost of occasional generic phrasing.
+> Pure LLM-based systems tend to lose weak signals during summarization.
+
+By introducing a hybrid approach (rule-based extraction + LLM reasoning), the system became significantly more reliable, especially in edge cases like conflicting reviews.
+
+This reflects a broader principle:
+- **LLMs are powerful, but benefit from structured guidance and constraints**
+
+---

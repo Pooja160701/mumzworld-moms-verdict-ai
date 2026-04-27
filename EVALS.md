@@ -9,7 +9,7 @@ To evaluate the Moms Verdict system, I designed a set of 10 test cases covering 
 - Uncertainty handling
 - Multilingual quality (English + Arabic)
 
-Each test case is scored out of 4 based on these criteria.
+Each test case is scored out of 5 based on these criteria.
 
 ---
 
@@ -44,24 +44,27 @@ Each case is evaluated on:
 4. **Uncertainty handling (1 point)**
    - Correct use of uncertainty_flag depending on scenario
 
+5. **Semantic grounding (1 point)**
+   - Extracted pros are semantically aligned with review content (embedding similarity)
+
 ---
 
 ## Results
 
-**Final Score: 26 / 36**
+**Final Score: 30 / 45**
 
 | Case                  | Score |
 |----------------------|------|
-| basic_positive       | 4/4  |
-| negative_signal      | 1/4  |
-| mixed_sentiment      | 4/4  |
-| arabic_query         | 3/4  |
-| low_data             | 0/4  |
-| garbage_input        | 3/4  |
-| conflicting_reviews  | 1/4  |
-| specific_feature     | 4/4  |
-| price_related        | 4/4  |
-| empty_query          | 2/4  |
+| basic_positive       | 4/5  |
+| negative_signal      | 3/5  |
+| mixed_sentiment      | 4/5  |
+| arabic_query         | 4/5  |
+| low_data             | 0/5  |
+| garbage_input        | 2/5  |
+| conflicting_reviews  | 2/5  |
+| specific_feature     | 4/5  |
+| price_related        | 4/5  |
+| empty_query          | 3/5  |
 
 ---
 
@@ -79,6 +82,10 @@ The system generates both English and Arabic outputs, with Arabic being reasonab
 ### 4. Strong Performance on Mixed Sentiment
 The model performs well when both positive and negative signals exist, extracting balanced pros and cons.
 
+### 5. Hybrid Extraction Improves Reliability
+
+A rule-based pre-extraction layer ensures that weak signals are not lost, improving performance on edge cases like conflicting reviews.
+
 ---
 
 ## Failure Modes
@@ -91,6 +98,25 @@ Phrases like “mixed reviews” or “some users find it okay” reduce specifi
 
 ### 3. Uncertainty Calibration
 The model occasionally marks outputs as uncertain even when sufficient data is present.
+
+---
+
+## Evaluation Improvements
+
+The evaluation system was upgraded during development:
+
+### Before
+- String matching for grounding
+- Lenient scoring
+- Limited detection of weak extraction
+
+### After
+- Semantic similarity using embeddings
+- Stricter extraction requirements
+- Penalization of vague summaries
+- Better handling of conflicting signals
+
+👉 This resulted in lower but more realistic scores.
 
 ---
 
