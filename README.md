@@ -277,7 +277,11 @@ Key improvements:
 
 ## 🎥 Demo
 
-(Link Balance: )
+Link 1: https://www.loom.com/share/9bf794527f6e46bd8660395420cfaa36
+
+Link 2: https://www.loom.com/share/2e6a345b92d94dfb8e2d5ea940a1b969
+
+![alt text](image.png)
 
 ---
 
